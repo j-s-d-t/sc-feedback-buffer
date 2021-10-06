@@ -9,7 +9,7 @@ s.waitForBoot {
         // // MONO ONLY
         // pre-existing impulse response sound files
         // (could also use any general soundfile too for cross-synthesis effects)
-		irbuffer = Buffer.read(s, "/Users/joes/Code/Supercollider/Buffer IR feedback /sounds/cave_irMono.wav");
+		irbuffer = Buffer.read(s, "/Users/joes/Code/Supercollider/sc-feedback-buffer/sounds/cave_irMono.wav");
 
         s.sync;
 
@@ -28,7 +28,7 @@ s.waitForBoot {
 }
 )
 
-~srcBuffer = Buffer.read(s, "/Users/joes/Code/Supercollider/Buffer IR feedback /sounds/consynthMono.wav");
+~srcBuffer = Buffer.read(s, "/Users/joes/Code/Supercollider/sc-feedback-buffer/sounds/consynthMono.wav");
 
 
 (
@@ -36,10 +36,10 @@ SynthDef(\helpTap, { |out, bufnum|
 
     var source, sourceRev, indx, capture;
 
-	indx = Phasor.ar(0, 0.8, 0, BufFrames.ir(bufnum), 1);
+	indx = Phasor.ar(0, 1, 0, BufFrames.ir(bufnum), 1);
 	source = BufRd.ar(1, ~srcBuffer, indx);
-	sourceRev = PartConv.ar(source, ~fftsize, ~irspectrum.bufnum, 0.1) + (source);
-    capture = BufWr.ar(sourceRev * 0.5, bufnum, indx);
+	sourceRev = source + PartConv.ar(source, ~fftsize, ~irspectrum.bufnum, 0.05);
+    capture = BufWr.ar(Limiter.ar(sourceRev, 0.7, 0.05), bufnum, indx);
 
 	Out.ar(out, [sourceRev, sourceRev]); // multichannel expansion, so one tap each ear
 }).add;
